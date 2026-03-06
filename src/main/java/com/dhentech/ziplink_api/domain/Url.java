@@ -1,17 +1,38 @@
 package com.dhentech.ziplink_api.domain;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 import java.net.URISyntaxException;
 
+@Entity
+@Table(name = "tb_url")
 public class Url {
 
-    private final String originalUrl;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "Original URL is mandatory")
+    @Size(max = 2048)
+    @Column(name = "original_url", nullable = false, length = 2048)
+    private String originalUrl;
+
+    @NotBlank(message = "Short code is mandatory")
+    @Size(min = 3, max = 20)
+    @Column(name = "short_code", nullable = false, unique = true, length = 20)
     private String shortCode;
-    private final LocalDateTime createdAt;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     private static final Pattern URL_PATTERN =
             Pattern.compile("^(https?|ftp)://[^\\s$.?#].[^\\s]*$");
+
+    protected Url() {}
 
     public Url(String originalUrl, String alias) {
         validateUrl(originalUrl);
@@ -37,17 +58,10 @@ public class Url {
         }
     }
 
-    public String getOriginalUrl() {
-        return originalUrl;
-    }
-
-    public String getShortCode() {
-        return shortCode;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public Long getId() { return id; }
+    public String getOriginalUrl() { return originalUrl; }
+    public String getShortCode() { return shortCode; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setShortCode(String shortCode) {
         if (this.shortCode != null) {
