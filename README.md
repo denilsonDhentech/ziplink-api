@@ -41,6 +41,16 @@ O **ZipLink** é um encurtador de URLs de alta performance desenvolvido com **Sp
     - A API estará disponível em: http://localhost:8080
     - Documentação Swagger: http://localhost:8080/swagger-ui/index.html
 ---
+### 🔐 Autenticação e Acesso
+A API utiliza **OAuth2 com JWT (JSON Web Tokens)** assinado via chaves **RSA (2048 bits)**.
+
+1. **Obter Token:** Realize um `POST` para `/api/auth/login` com o corpo:
+   ```json
+   {
+     "username": "admin",
+     "password": "admin123"
+   }
+---
 ## 🏗️ 2. Escolhas de Design
 
 ### Arquitetura e Padrões
@@ -71,7 +81,7 @@ Apesar de sólido, um projeto sempre pode evoluir. Com mais tempo, eu implementa
 
 4. **Dockerização:** Criaria um Dockerfile e um docker-compose.yml para subir a aplicação, o banco de dados e o Redis em um único comando.
 
-5. **Autenticação:** Implementaria OAuth2/JWT para permitir que usuários cadastrados gerenciem seus próprios links e vejam relatórios privados.
+5. **Autenticação:** Refinar o sistema de login através da implementação de **ROLES** específicas, permitindo diferentes níveis de permissão e acesso granular aos recursos da API.
 
 ---
 # Desenvolvido por DhenSouza

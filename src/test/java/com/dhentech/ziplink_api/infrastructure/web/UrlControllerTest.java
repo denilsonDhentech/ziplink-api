@@ -1,7 +1,6 @@
 package com.dhentech.ziplink_api.infrastructure.web;
 
 import com.dhentech.ziplink_api.BaseIntegrationTest;
-import com.dhentech.ziplink_api.domain.Url;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,9 +11,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 class UrlControllerTest extends BaseIntegrationTest {
@@ -26,7 +26,7 @@ class UrlControllerTest extends BaseIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("Should shorten URL and return 201 Created")
+    @DisplayName("Should shorten URL and return 201 Created when authenticated")
     void shouldShortenUrlSuccessfully() throws Exception {
         var requestBody = Map.of(
                 "originalUrl", "https://github.com/DhenSouza",
@@ -34,6 +34,7 @@ class UrlControllerTest extends BaseIntegrationTest {
         );
 
         mockMvc.perform(post("/api/v1/urls/shorten")
+                        .with(jwt().jwt(jwt -> jwt.claim("role", "ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(status().isCreated())
@@ -42,11 +43,23 @@ class UrlControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return 400 when URL is invalid")
+    @DisplayName("Should return 401 Unauthorized when no token is provided")
+    void shouldReturn401WhenNotAuthenticated() throws Exception {
+        var requestBody = Map.of("originalUrl", "https://google.com");
+
+        mockMvc.perform(post("/api/v1/urls/shorten")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when URL is invalid even if authenticated")
     void shouldReturn400ForInvalidUrl() throws Exception {
         var requestBody = Map.of("originalUrl", "");
 
         mockMvc.perform(post("/api/v1/urls/shorten")
+                        .with(jwt().jwt(j -> j.claim("role", "ADMIN")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(status().isBadRequest());
