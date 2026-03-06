@@ -4,6 +4,8 @@ import com.dhentech.ziplink_api.application.dtos.UrlRequest;
 import com.dhentech.ziplink_api.application.dtos.UrlResponse;
 import com.dhentech.ziplink_api.domain.Url;
 import com.dhentech.ziplink_api.domain.repositories.UrlRepository;
+import com.dhentech.ziplink_api.infrastructure.web.exceptions.AliasAlreadyExistsException;
+import com.dhentech.ziplink_api.infrastructure.web.exceptions.UrlNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -28,7 +30,7 @@ public class UrlShortenerService {
                     : UUID.randomUUID().toString().substring(0, 6);
 
             if (repository.existsByShortCode(code)) {
-                throw new IllegalArgumentException("Short code or alias already in use: " + code);
+                throw new AliasAlreadyExistsException();
             }
 
             Url url = new Url(request.originalUrl(), code);
@@ -48,6 +50,6 @@ public class UrlShortenerService {
     public String getOriginalUrlByCode(String code) {
         return repository.findByShortCode(code)
                 .map(Url::getOriginalUrl)
-                .orElseThrow(() -> new RuntimeException("URL not found for code: " + code));
+                .orElseThrow(UrlNotFoundException::new);
     }
 }
