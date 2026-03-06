@@ -44,4 +44,10 @@ public class UrlShortenerService {
             lock.unlock();
         }
     }
+
+    public String getOriginalUrlByCode(String code) {
+        return repository.findByShortCode(code)
+                .map(Url::getOriginalUrl)
+                .orElseThrow(() -> new RuntimeException("URL not found for code: " + code));
+    }
 }
